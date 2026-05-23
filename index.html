@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智學APP 0323</title>
+    <style>
+        :root { --pink: #6538df87; --blue: #8EACCD; --bg: #FFF9F0; --dark-blue: #083061e9;--soft-shadow: 0 8px 30px rgba(0,0,0,0.08)}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #2c2c2c; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;transform: scale(2.5)}
+        #app-container { width: 1920px; height: 1080px; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.3);border-radius: 40px }
+        .page { display: none; width: 100%; height: 100%; padding: 25px; flex-direction: column; }
+        .page.active { display: flex; }
+        .content-wrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;padding-top: 0px; }
+        .header { text-align: center; color: #083061e9; font-size: 42px; font-weight: 800; margin-top: 30px; margin-bottom: 5px;letter-spacing: 1px }
+        .math-q-number {font-size: 38px;color: var(--blue);font-weight: bold;margin-bottom: 10px;width: 90%;text-align: center;}
+        .sub-header { font-size: 46px; font-weight: bold; color: #083061e9; margin-bottom: 30px; text-align: center; }
+        .case-input { width: 85%; padding: 18px; font-size: 36px; border: 2px solid var(--blue); border-radius: 12px; text-align: center; margin-top: 20px; }
+        .btn-next { width: 75%; align-self: center; background:linear-gradient(135deg, #8EACCD, #6538df87); color: white; border: none; padding: 20px; border-radius: 20px; font-size: 32px; font-weight: bold; cursor: pointer; margin-top: 20px; margin-bottom: 60px;box-shadow: 0 4px 15px rgba(101, 56, 223, 0.3);transition: transform 0.2s }
+        .btn-next:active { transform: scale(0.95); }
+        .btn-level, .btn-lang { width: 65%; background: white; border: 3px solid var(--blue); color: var(--blue); padding: 20px; border-radius: 20px; font-size: 38px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .opt-btn { width: 80%; background: white; border: 2px solid #f0f0f0; padding: 15px; border-radius: 18px; font-size: 38px; font-weight: bold; cursor: pointer; margin-bottom: 12px;color: #444;transition: all 0.2s }
+        .opt-btn.selected { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 4px 12px rgba(142, 172, 205, 0.4)}
+        .q-card { background: white; border-radius: 24px; padding: 30px 20px; box-shadow: var(--soft-shadow); text-align: center; margin-bottom: 25px; width: 92%; border: 1px solid rgba(142, 172, 205, 0.2)}
+        .q-text { font-size: 55px; font-weight: bold; color: #333; }
+        #score-page .content-wrapper {display: flex;flex-direction: column;justify-content: center;align-items: center;padding-top: 0}
+        #score-page #score-title {margin-bottom: 10px}
+        #score-val {margin: 10px 0 !important}
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="p-start" class="page active">
+        <div class="header">國立陽明交通大學</div>
+        <div class="content-wrapper">
+            <h1 style="font-size: 70px; color: #083061e9; margin: 0;">智學APP</h1>
+            <p style="font-size: 32px; color: #6538df87; font-weight: bold; margin-top: 10px; margin-bottom: 0;">計算教學版</p>
+            <p style="font-size: 30px; margin-top: 40px; margin-bottom: 10px; color:#083061e9">個案編號</p>
+            <input type="text" id="caseName" class="case-input">
+        </div>
+        <button class="btn-next" onclick="goToLevelSelect()">開始測驗</button>
+    </div>
+
+    <div id="p-math-level" class="page">
+        <div class="header">第一部分：計算</div>
+        <div class="content-wrapper">
+            <h2 style="font-size: 38px; color: #083061e9;">請選擇計算難度</h2>
+            <button class="btn-level" onclick="startMath('easy')">易</button>
+            <button class="btn-level" onclick="startMath('mid')">中</button>
+            <button class="btn-level" onclick="startMath('hard')">難</button>
+        </div>
+    </div>
+
+    <div id="quiz-page" class="page">
+        <div class="header" id="quiz-header">測驗</div>
+        <div class="content-wrapper">
+            <div id="math-display" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div id="math-q-num-display" class="math-q-number"></div>
+                <div class="q-card"><div id="q-math-text" class="q-text"></div></div>
+                <div id="options-box" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+            </div>
+        </div>
+        <button class="btn-next" id="main-next-btn" onclick="handleNext()">下一步</button>
+    </div>
+
+    <div id="score-page" class="page">
+        <div class="content-wrapper">
+            <h2 id="score-title" style="font-size:32px;">結算</h2>
+            <div id="score-val" style="font-size:80px; color:var(--pink); font-weight:bold; margin: 20px 0;">0</div>
+            <div id="time-val" style="font-size:24px; color:#666; font-weight:bold;">時間：0秒</div>
+        </div>
+        <button class="btn-next" id="score-next-btn">重新選擇難度</button>
+    </div>
+</div>
+
+<script>
+    function formatTimeDisplay(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return m > 0 ? `${m}分${s}秒` : `${s}秒`;
+    }
+
+    // 重新規劃後的計算題庫
+    const mathDB = {
+        // 易：個位數加減個位數
+        easy: [
+            {q:"2 + 3 =", opts:[5,4,6], a:5},
+            {q:"6 + 3 =", opts:[8,9,10], a:9},
+            {q:"4 + 4 =", opts:[7,8,9], a:8},
+            {q:"5 - 2 =", opts:[3,2,4], a:3},
+            {q:"9 - 4 =", opts:[5,6,4], a:5},
+            {q:"8 - 3 =", opts:[4,5,6], a:5}
+        ],
+        // 中：個位數加減兩位數 / 兩位數加減個位數
+        mid: [
+            {q:"15 + 4 =", opts:[19,20,18], a:19},
+            {q:"6 + 14 =", opts:[20,19,21], a:20},
+            {q:"41 + 7 =", opts:[48,49,47], a:48},
+            {q:"25 - 2 =", opts:[23,34,12], a:23},
+            {q:"38 - 5 =", opts:[33,32,34], a:33},
+            {q:"55 - 9 =", opts:[46,45,48], a:46}
+        ],
+        // 難：兩位數加減兩位數
+        hard: [
+            {q:"27 + 15 =", opts:[34,42,23], a:42},
+            {q:"15 + 47 =", opts:[62,55,72], a:62},
+            {q:"17 + 72 =", opts:[89,81,97], a:89},
+            {q:"32 - 18 =", opts:[24,26,14], a:14},
+            {q:"50 - 15 =", opts:[35,45,24], a:35},
+            {q:"81 - 19 =", opts:[62,70,53], a:62}
+        ]
+    };
+
+    let currentIdx = 0, selectedMathAns = null;
+    let currentMathList = [];
+    let mathScore = 0;
+    let startTime = 0;
+    let caseName = "";
+
+    function goToLevelSelect() {
+        const name = document.getElementById('caseName').value;
+        if(!name) return alert("請輸入個案編號");
+        caseName = name;
+        document.getElementById('p-start').style.display = 'none';
+        document.getElementById('p-math-level').style.display = 'flex';
+    }
+
+    function startMath(level) {
+        // 從資料庫中深拷貝題目，並透過隨機排序（洗牌）達到隨機出題效果
+        currentMathList = [...mathDB[level]].sort(() => Math.random() - 0.5);
+        mathScore = 0; 
+        currentIdx = 0;
+        startTime = Date.now();
+        document.getElementById('p-math-level').style.display = 'none';
+        document.getElementById('quiz-page').style.display = 'flex';
+        loadMath();
+    }
+
+    function loadMath() {
+        const d = currentMathList[currentIdx];
+        document.getElementById('quiz-header').innerText = "第一部分：計算"; 
+        document.getElementById('math-q-num-display').innerText = `第 ${currentIdx + 1} 題`;
+        document.getElementById('q-math-text').innerText = d.q;
+        
+        // 選項隨機排序
+        let opts = [...d.opts].sort(() => Math.random() - 0.5);
+        document.getElementById('options-box').innerHTML = opts.map(o => `<button class="opt-btn" onclick="pickMath(${o}, ${d.a}, this)">${o}</button>`).join('');
+        selectedMathAns = null;
+    }
+
+    function pickMath(val, ans, btn) {
+        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedMathAns = (val === ans);
+    }
+
+    function handleNext() {
+        if(selectedMathAns === null) return alert("請選擇答案");
+        if(selectedMathAns) mathScore++;
+        
+        currentIdx++;
+        if(currentIdx < 6) {
+            loadMath(); 
+        } else {
+            showScorePage("計算部分得分", mathScore, 6);
+        }
+    }
+
+    function showScorePage(title, score, max) {
+        const endTime = Date.now();
+        const durationSeconds = Math.round((endTime - startTime) / 1000);
+        const timeStr = formatTimeDisplay(durationSeconds);
+       
+        document.getElementById('quiz-page').style.display = 'none';
+        document.getElementById('score-page').style.display = 'flex';
+        document.getElementById('score-title').innerText = title;
+        document.getElementById('score-val').innerText = `${score} / ${max}`;
+        document.getElementById('time-val').innerText = `耗時：${timeStr}`;
+
+        // 當點擊結算頁面按鈕時，直接回到選擇難度的頁面
+        document.getElementById('score-next-btn').onclick = () => {
+            document.getElementById('score-page').style.display = 'none';
+            document.getElementById('p-math-level').style.display = 'flex';
+        };
+    }
+</script>
+</body>
+</html>
